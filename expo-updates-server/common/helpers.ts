@@ -1,15 +1,18 @@
-import crypto, { BinaryToTextEncoding } from 'crypto';
-import fs from 'fs';
-import mime from 'mime';
-import path from 'path';
-import { Dictionary } from 'structured-headers';
+import crypto, { BinaryToTextEncoding } from "crypto";
+import fs from "fs";
+import mime from "mime";
+import path from "path";
+import { Dictionary } from "structured-headers";
+import { TUpdateRequestParams } from "../types/types";
+
+export const RootProjectPath = process.env.INIT_CWD
 
 function createHash(file: Buffer, hashingAlgorithm: string, encoding: BinaryToTextEncoding) {
   return crypto.createHash(hashingAlgorithm).update(file).digest(encoding);
 }
 
 function getBase64URLEncoding(base64EncodedString: string): string {
-  return base64EncodedString.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  return base64EncodedString.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
 export function convertToDictionaryItemsRepresentation(obj: { [key: string]: string }): Dictionary {
@@ -21,10 +24,10 @@ export function convertToDictionaryItemsRepresentation(obj: { [key: string]: str
 }
 
 export function signRSASHA256(data: string, privateKey: string) {
-  const sign = crypto.createSign('RSA-SHA256');
-  sign.update(data, 'utf8');
+  const sign = crypto.createSign("RSA-SHA256");
+  sign.update(data, "utf8");
   sign.end();
-  return sign.sign(privateKey, 'base64');
+  return sign.sign(privateKey, "base64");
 }
 
 export async function getPrivateKeyAsync() {
@@ -34,17 +37,17 @@ export async function getPrivateKeyAsync() {
   }
 
   const pemBuffer = fs.readFileSync(path.resolve(privateKeyPath));
-  return pemBuffer.toString('utf8');
+  return pemBuffer.toString("utf8");
 }
 
 export function getAssetMetadataSync({
-  updateBundlePath,
-  filePath,
-  ext,
-  isLaunchAsset,
-  runtimeVersion,
-  platform,
-}: {
+                                       updateBundlePath,
+                                       filePath,
+                                       ext,
+                                       isLaunchAsset,
+                                       runtimeVersion,
+                                       platform
+                                     }: {
   updateBundlePath: string;
   filePath: string;
   ext: string | null;
@@ -54,17 +57,17 @@ export function getAssetMetadataSync({
 }) {
   const assetFilePath = `${updateBundlePath}/${filePath}`;
   const asset = fs.readFileSync(path.resolve(assetFilePath), null);
-  const assetHash = getBase64URLEncoding(createHash(asset, 'sha256', 'base64'));
-  const key = createHash(asset, 'md5', 'hex');
-  const keyExtensionSuffix = isLaunchAsset ? 'bundle' : ext;
-  const contentType = isLaunchAsset ? 'application/javascript' : mime.getType(ext);
+  const assetHash = getBase64URLEncoding(createHash(asset, "sha256", "base64"));
+  const key = createHash(asset, "md5", "hex");
+  const keyExtensionSuffix = isLaunchAsset ? "bundle" : ext;
+  const contentType = isLaunchAsset ? "application/javascript" : mime.getType(ext);
 
   return {
     hash: assetHash,
     key,
     fileExtension: `.${keyExtensionSuffix}`,
     contentType,
-    url: `${process.env.HOSTNAME}/api/assets?asset=${assetFilePath}&runtimeVersion=${runtimeVersion}&platform=${platform}`,
+    url: `${process.env.HOSTNAME}/api/assets?asset=${assetFilePath}&runtimeVersion=${runtimeVersion}&platform=${platform}`
   };
 }
 
@@ -72,13 +75,13 @@ export function getMetadataSync({ updateBundlePath, runtimeVersion }) {
   try {
     const metadataPath = `${updateBundlePath}/metadata.json`;
     const updateMetadataBuffer = fs.readFileSync(path.resolve(metadataPath), null);
-    const metadataJson = JSON.parse(updateMetadataBuffer.toString('utf-8'));
+    const metadataJson = JSON.parse(updateMetadataBuffer.toString("utf-8"));
     const metadataStat = fs.statSync(metadataPath);
 
     return {
       metadataJson,
       createdAt: new Date(metadataStat.birthtime).toISOString(),
-      id: createHash(updateMetadataBuffer, 'sha256', 'hex'),
+      id: createHash(updateMetadataBuffer, "sha256", "hex")
     };
   } catch (error) {
     throw new Error(`No update found with runtime version: ${runtimeVersion}. Error: ${error}`);
@@ -95,7 +98,7 @@ export function getExpoConfigSync({ updateBundlePath, runtimeVersion }) {
   try {
     const expoConfigPath = `${updateBundlePath}/expoConfig.json`;
     const expoConfigBuffer = fs.readFileSync(path.resolve(expoConfigPath), null);
-    const expoConfigJson = JSON.parse(expoConfigBuffer.toString('utf-8'));
+    const expoConfigJson = JSON.parse(expoConfigBuffer.toString("utf-8"));
     return expoConfigJson;
   } catch (error) {
     throw new Error(
@@ -109,4 +112,34 @@ export function convertSHA256HashToUUID(value: string) {
     16,
     20
   )}-${value.slice(20, 32)}`;
+}
+
+export function checkIfDirectoryExists(path) {
+  return fs.existsSync(path);
+}
+
+export const generateUpdatesPath = (
+  {
+    runtimeVersion,
+    releaseChannel,
+    platform
+  }: TUpdateRequestParams): string => `updates/${releaseChannel}/${runtimeVersion}/${platform}`;
+
+
+
+export function getAppUpdatesPath({ runtimeVersion, releaseChannel, platform }: TUpdateRequestParams): string {
+  const errorMessage = new Error(`No update found for runtimeVersion: ${runtimeVersion}, releaseChannel: ${releaseChannel}, platform: ${platform}`);
+  try {
+    const platformPath = generateUpdatesPath({ runtimeVersion, releaseChannel, platform });
+    const platformForBothPath = generateUpdatesPath({ runtimeVersion, releaseChannel, platform: "default" });
+    if (checkIfDirectoryExists(platformPath)) {
+      return platformPath;
+    } else if (checkIfDirectoryExists(platformForBothPath)) {
+      return platformForBothPath;
+    } else {
+      throw errorMessage;
+    }
+  } catch (e) {
+    throw errorMessage;
+  }
 }
