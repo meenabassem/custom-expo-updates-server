@@ -4,9 +4,14 @@
   "scripts": {
     "start": "expo start --dev-client",
     "android": "expo run:android",
+    "androidRelease": "yarn android --variant release",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "eject": "expo eject"
+    "eject": "expo eject",
+    "adbReverse3000": "adb reverse tcp:3000 tcp:3000",
+    "rebuildAfterUpdatesServerUrlChange": "expo prebuild",
+    "export-bundle": "expo export --experimental-bundle",
+    "publishUpdateToServer": "npx nodemon scripts/publish-update.mjs"
   },
   "dependencies": {
     "expo": "~47.0.8",
@@ -20,7 +25,15 @@
     "react-native-web": "~0.18.7"
   },
   "devDependencies": {
-    "@babel/core": "^7.19.3"
+    "@babel/core": "^7.19.3",
+    "@expo/config": "^7.0.3",
+    "@types/form-data": "^2.5.0",
+    "@types/node-fetch": "^2.6.2",
+    "form-data": "^4.0.0",
+    "fs": "^0.0.1-security",
+    "node-fetch": "^3.3.0",
+    "node-recursive-directory": "^1.2.0",
+    "path": "^0.12.7"
   },
   "private": true
 }
