@@ -1,0 +1,32 @@
+{
+  "updateConfigParams": {
+    "releaseChannel": [
+      "dev",
+      "live",
+      "testing",
+      "uat"
+    ],
+    "platform": [
+      "default",
+      "android",
+      "ios"
+    ]
+  },
+  "updateConfigs": [
+    {
+      "name": "Dev",
+      "releaseChannel": "dev",
+      "platform": "default"
+    },
+    {
+      "name": "testing",
+      "releaseChannel": "testing",
+      "platform": "default"
+    },
+    {
+      "name": {
+
+      }
+    }
+  ]
+}

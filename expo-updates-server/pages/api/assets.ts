@@ -3,11 +3,10 @@ import mime from 'mime';
 import { NextApiRequest, NextApiResponse } from 'next';
 import path from 'path';
 
-import { getMetadataSync } from '../../common/helpers';
+import { getAppUpdatesPath, getMetadataSync } from '../../common/helpers';
 
 export default function assetsEndpoint(req: NextApiRequest, res: NextApiResponse) {
-  const { asset: assetName, runtimeVersion, platform } = req.query;
-
+  const { asset: assetName, runtimeVersion, platform, releaseChannel = 'dev' } = req.query;
   if (!assetName || typeof assetName !== 'string') {
     res.statusCode = 400;
     res.json({ error: 'No asset name provided.' });
@@ -26,7 +25,12 @@ export default function assetsEndpoint(req: NextApiRequest, res: NextApiResponse
     return;
   }
 
-  const updateBundlePath = `updates/${runtimeVersion}`;
+  const updateBundlePath = getAppUpdatesPath({
+    releaseChannel: String(releaseChannel),
+    platform,
+    runtimeVersion,
+  });
+
   const { metadataJson } = getMetadataSync({
     updateBundlePath,
     runtimeVersion,
@@ -34,11 +38,10 @@ export default function assetsEndpoint(req: NextApiRequest, res: NextApiResponse
 
   const assetPath = path.resolve(assetName);
   const assetMetadata = metadataJson.fileMetadata[platform].assets.find(
-    (asset) => asset.path === assetName.replace(`updates/${runtimeVersion}/`, '')
+    (asset) => asset.path === assetName.replace(`${updateBundlePath}/`, '')
   );
   const isLaunchAsset =
-    metadataJson.fileMetadata[platform].bundle ===
-    assetName.replace(`updates/${runtimeVersion}/`, '');
+    metadataJson.fileMetadata[platform].bundle === assetName.replace(`${updateBundlePath}/`, '');
 
   if (!fs.existsSync(assetPath)) {
     res.statusCode = 404;

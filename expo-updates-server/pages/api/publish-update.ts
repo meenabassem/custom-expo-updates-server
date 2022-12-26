@@ -7,9 +7,7 @@ import multiparty from 'multiparty';
 import { Nextable } from 'next-connect/dist/types/types';
 import { RequestHandler } from 'next-connect/dist/types/node';
 import fs from 'fs';
-
-const DOWNLOAD_UPDATES_LOCK_FOLDER = '.lock';
-const UPLOAD_UPDATES_LOCK_FILE = '.updateLock';
+import { DOWNLOAD_UPDATES_LOCK_FOLDER, UPLOAD_UPDATES_LOCK_FILE } from './consts';
 
 interface NextApiPublishUpdateRequest extends NextApiRequest {
   body: {
@@ -169,7 +167,9 @@ const moveFilesFromTempDirectoryMiddleware: Nextable<
                 };
                 try {
                   if (fs.existsSync(lockFolderPath)) {
-                    const lockFiles = fs.readdirSync(lockFolderPath);
+                    const lockFiles = fs
+                      .readdirSync(lockFolderPath)
+                      ?.filter((i) => i !== '.DS_Store');
                     if (lockFiles?.length === 0) {
                       handleClearLockFolder();
                     } else {
@@ -186,7 +186,7 @@ const moveFilesFromTempDirectoryMiddleware: Nextable<
                     e
                   );
                 }
-              }, 1000);
+              }, 10000);
             });
           })();
         }
@@ -223,7 +223,6 @@ router.use(moveFilesFromTempDirectoryMiddleware);
 router.use(removeUpdateLockFileMiddleware);
 
 /**
- TODO:
  For each update folder, there should be 2 new entries
  - .lock folder (contains id's or UUID generated for each requested update to be downloaded on a device, the file is deleted once the update is successfully downloaded)
  - .updateLock file: created first file when uploading new updates, prevents downloading of future updates
@@ -240,6 +239,9 @@ router.use(removeUpdateLockFileMiddleware);
  to the correct update path,
  - after renaming, should remove the .updateLock file to activate the new update.
  - For the downloading updates API, should add checking for .updateLock file existence before providing the update
+
+ - Note: the .lock file is not very accurate, since after getting the assets from API,
+ there's a request for each missing asset to be downloaded (not all assets are always downloaded)
  */
 router.post(async (req: NextApiPublishUpdateRequest, res: NextApiResponse) => {
   const { fields, files } = req.body;

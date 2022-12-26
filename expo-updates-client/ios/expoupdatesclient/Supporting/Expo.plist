@@ -38,6 +38,6 @@ ZA==
     <key>EXUpdatesRuntimeVersion</key>
     <string>1</string>
     <key>EXUpdatesURL</key>
-    <string>http://localhost:3000/api/manifest</string>
+    <string>http://192.168.1.4:3000/api/manifest</string>
   </dict>
 </plist>
