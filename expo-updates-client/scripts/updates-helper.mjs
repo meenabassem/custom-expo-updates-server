@@ -5,8 +5,10 @@ import {exec} from "child_process";
 import getFsRecursive from 'node-recursive-directory'
 import FormData from "form-data";
 import fetch from "node-fetch";
+import appRootPath from "app-root-path";
 
-const projectRootDir = path.dirname(process.cwd())
+
+const projectRootDir = appRootPath.path
 const {exp} = ExpoConfig.getConfig(projectRootDir, {
     skipSDKVersionRequirement: true,
     isPublicConfig: true,
@@ -67,7 +69,7 @@ export const generateBundle = async () => {
 export const getFilePaths = async () => {
     return new Promise(async (resolve, reject) => {
         try {
-            const files = await getFsRecursive('../dist/', true)
+            const files = await getFsRecursive(`${projectRootDir}/dist/`, true)
             const mappedFiles = files?.map(i => {
                 if (i?.filepath && i?.filepath?.split('/dist') && i?.filepath?.split('/dist').length === 2) {
                     return {

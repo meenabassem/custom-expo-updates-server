@@ -11,7 +11,8 @@
     "adbReverse3000": "adb reverse tcp:3000 tcp:3000",
     "rebuildAfterUpdatesServerUrlChange": "expo prebuild",
     "export-bundle": "expo export --experimental-bundle",
-    "publishUpdateToServer": "npx nodemon scripts/publish-update.mjs"
+    "publishUpdateToServer_nodemon": "npx nodemon scripts/publish-update.mjs",
+    "publishUpdateToServer": "node scripts/publish-update.mjs"
   },
   "dependencies": {
     "expo": "~47.0.9",
@@ -30,6 +31,7 @@
     "@expo/config": "^7.0.3",
     "@types/form-data": "^2.5.0",
     "@types/node-fetch": "^2.6.2",
+    "app-root-path": "^3.1.0",
     "form-data": "^4.0.0",
     "fs": "^0.0.1-security",
     "node-fetch": "^3.3.0",
