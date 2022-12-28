@@ -35,6 +35,8 @@ ZA==
     <true/>
     <key>EXUpdatesLaunchWaitMs</key>
     <integer>30000</integer>
+    <key>EXUpdatesReleaseChannel</key>
+    <string>dev-2266447777</string>
     <key>EXUpdatesRuntimeVersion</key>
     <string>1</string>
     <key>EXUpdatesURL</key>
