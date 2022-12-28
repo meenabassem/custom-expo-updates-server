@@ -250,7 +250,7 @@ router.post(async (req: NextApiPublishUpdateRequest, res: NextApiResponse) => {
 
 export default router.handler({
   onError: (err, req, res) => {
-    console.error(err?.stack);
+    console.error(err);
     res.status(500).end('Something broke!');
   },
   onNoMatch: (req, res) => {
